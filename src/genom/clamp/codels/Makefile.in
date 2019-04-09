@@ -1,0 +1,40 @@
+MOBAR_PATH := /home/goac/Escritorio/mobar-svn/mobar
+TARGETS_CLNT = $(MOBAR_PATH)/src/controller_clnt.o $(MOBAR_PATH)/src/controller_xdr.o 
+
+# --- paths -------------------------------------------------------------
+
+top_builddir=	@top_builddir@
+top_srcdir=	@top_srcdir@
+srcdir=		@srcdir@
+builddir=       @builddir@
+
+INSTALL=  	@INSTALL@
+
+include $(top_builddir)/config.mk
+
+# Ensure that the default target is the one defined in codels.mk
+all: codels-mk-all
+
+# --- source files ------------------------------------------------------
+
+codels_src = \
+	clampFunctions.c \
+	clampClampTaskCodels.c \
+	clampCntrlTaskCodels.c
+
+# Add extra flags for the preprocessor (external libraries, ...)
+EXTRA_INCLUDES += -I$(MOBAR_PATH)/include -I$(MOBAR_PATH)/src -I$(MOBAR_PATH)/src/genom 
+#
+# Add extra link flags (external libraries, ...)
+EXTRA_LIBS += -lnsl -llog4cpp $(TARGETS_CLNT)
+#
+# Install files here (any header that is not included in the .gen for instance)
+# Files that are included in the GenoM file are automatically installed
+# use $(includedir) to install headers
+# user-install: 
+
+# --- compilation -------------------------------------------------------
+include $(top_srcdir)/$(autoconfdir)/codels.mk
+include $(top_srcdir)/$(autoconfdir)/config.$(OSAPI).mk
+
+

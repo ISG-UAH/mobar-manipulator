@@ -1,0 +1,32 @@
+include $(PLEXIL_HOME)/makeinclude/standard-defs.make
+
+OSTYPE   ?= $(shell uname -s)
+MACHTYPE ?= $(shell uname -p)
+OS_ARCH = $(OSTYPE)-$(MACHTYPE)
+
+LIBRARY		:= $(NOM)Adapter
+
+OG := $(MOBAR_HOME)/src/OgateInterf
+
+# External dependencies
+MOD_NAME	:= $(shell echo $(NOM) | tr '[:upper:]' '[:lower:]')
+GENOM_PATH	:= $(PWD)/../genom
+GENOM_MOD	:= $(GENOM_PATH)/$(MOD_NAME)
+
+INC_DIRS	+= $(PLEXIL_HOME)/src/third-party/pugixml/src $(PLEXIL_HOME)/src/utils $(PLEXIL_HOME)/src/exec $(PLEXIL_HOME)/src/app-framework
+INC_DIRS	+= $(GENOM_PATH) $(GENOM_MOD) $(GENOM_MOD)/server /opt/openrobots/include $(OG)
+LIB_PATH	+= $(MOBAR_HOME)/lib
+LIBS		+= dl pugixml PlexilAppFramework PlexilUtils PlexilExec $(MOD_NAME)Client Ogate
+
+SRC		:= subscriber.cc $(NOM)_system.cc
+INC		:= subscriber.hh $(NOM)_system.hh
+
+SRC		+= $(OG)/OgateCommon.cpp $(NOM)Adapter.cc
+INC		+= $(OG)/OgateCommon.h $(NOM)Adapter.hh
+
+SVN_FILES       := Makefile $(SRC) $(INC)
+
+include $(PLEXIL_HOME)/makeinclude/standard-targets.make
+ifneq ($(MAKECMDGOALS),clean)
+-include Makedepend
+endif

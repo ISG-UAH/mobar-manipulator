@@ -1,0 +1,71 @@
+/* --------------------------| MODULE DECLARATION |-------------------------- */
+module proximity {
+    number:	    2005;
+    internal_data:  PROXIMITY_STR;
+    version:	    "1.0";
+    email:	    "juan.mora@edu.uah.es";
+    lang:	    "c";
+};
+
+
+/* --------------------| DEFINITION OF INTERNAL DATABASE |------------------- */
+#include "proximityStruct.h"
+
+typedef struct PROXIMITY_STR
+{
+    PROXIMITYSENSORS sensors;
+}PROXIMITY_STR;
+
+
+/* ---------------------| SERVICES DEFINITION: REQUESTS |-------------------- */
+
+request checkLeftSensors {
+    type:		exec;
+    codel_main:		checkLeftSensorsMain;
+    fail_reports:	LEFT_NEAR_OBSTACLE, LEFT_COLLISION;
+    interrupt_activity:	checkLeftSensors, checkRightSensors, checkTopSensors, checkBackSensors;
+    exec_task:		proximityTask;
+};
+
+request checkRightSensors {
+    type:		exec;
+    codel_main:		checkRightSensorsMain;
+    fail_reports:	RIGHT_NEAR_OBSTACLE, RIGHT_COLLISION;
+    interrupt_activity:	checkLeftSensors, checkRightSensors, checkTopSensors, checkBackSensors;
+    exec_task:		proximityTask;
+};
+
+request checkTopSensors {
+    type:		exec;
+    codel_main:		checkTopSensorsMain;
+    fail_reports:	TOP_NEAR_OBSTACLE, TOP_COLLISION;
+    interrupt_activity:	checkLeftSensors, checkRightSensors, checkTopSensors, checkBackSensors;
+    exec_task:		proximityTask;
+};
+
+request checkBackSensors {
+    type:		exec;
+    codel_main:		checkBackSensorsMain;
+    fail_reports:	BACK_NEAR_OBSTACLE, BACK_COLLISION;
+    interrupt_activity:	checkLeftSensors, checkRightSensors, checkTopSensors, checkBackSensors;
+    exec_task:		proximityTask;
+};
+
+
+/* --------------------------| POSTERS DECLARATION |------------------------- */
+
+poster Status {
+    update:	auto;
+    data:	sensors::sensors;
+    exec_task:	proximityTask;
+};
+
+
+/* ----------------------| EXECUTION TASKS DECLARATION |--------------------- */
+exec_task proximityTask {
+    period:		1;
+    priority:		100;
+    stack_size:		20000;
+    codel_task_start:	proximityInit;
+    codel_task_end:	proximityEnd;
+};

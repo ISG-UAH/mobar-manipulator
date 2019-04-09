@@ -1,0 +1,111 @@
+// Commands for PDDL planner
+Integer Command create_planner(String configfile);
+Boolean Command get_plan(Integer numplanner, Boolean replan);
+String  Command next_action(Integer numplanner);
+Boolean	Command insert_predicate(Integer numplanner, String predicate, String objects, Boolean isgoal);
+Boolean Command modify_predicate(Integer numplanner, String predicate, String objectsold, String objectsnew);
+Boolean Command remove_predicate(Integer numplanner, String predicate, String objects);
+Boolean Command modify_function(Integer numplanner, String predicate, String objects, Real value);
+String 	Command predicate_object(Integer numplanner, String predicate, Integer numobject);
+String 	Command action_object(Integer numplanner, Integer numobject);
+Real	Command function_value(Integer numplanner, String predicate, String objects);
+Real	Command action_duration(Integer numplanner);
+
+// Commands for Locomotion
+Boolean	Command init_locomotion();
+Integer	Command moveRef(String, Real);
+Integer	Command moveTo(String, Real);
+Integer	Command rotateRef(Integer, Real);
+Boolean	Command setSpeed(Real);
+String	Command getNowposition();
+String 	Command getBackposition(String, Real);
+Real	Command getNowX();
+Real	Command getNowY();
+Real	Command getNowZ();
+
+// Commands for Clamp
+Boolean	Command init_clamp();
+Boolean	Command openClamp();
+Boolean	Command closeClamp();
+Boolean	Command checkBarrier();
+String	Command getColor();
+
+// Library Calls
+LibraryAction MoveArm(In Integer numplanner_i, InOut String pos_i[4], In String positionTarget_i, In String positionNow_i, InOut Integer blocks_on_pos_i[4], InOut Real coordZ_i, In Real midZ_i, InOut Integer retval_o);
+
+
+SearchBlock:
+{
+	In Integer numplanner_j;
+	In String NameBlocks_j[4];
+	In String colorTarget_j;
+	InOut String pos_j[4];
+	In String positionTarget_j;
+	InOut Integer blocks_on_pos_j[4];
+	In Real midZ_j;
+	InOut String retval_out;
+	
+	In String positionNow_j;
+	InOut Real coordZ_j;
+	
+	String positionNow;
+	String positionTarget;
+	
+	Integer retval;
+	
+	EndCondition isKnown(retval_out);
+	
+	Sequence
+	{
+		OpenGrip:
+		{
+			Boolean success;
+			EndCondition isKnown(success);
+			success = openClamp();
+		}
+		FindBlock:
+		{
+			for (Integer i = 0; i<4; i + 1)
+			{
+				if(pos_j[i] != positionTarget_j && pos_j[i] != "")
+				{
+					Boolean barrier;
+				
+					GetPosTarget: positionTarget = pos_j[i];
+					
+					GetPosNow: positionNow = getNowposition();
+					
+					Move:
+					{
+						Integer retval;
+						EndCondition isKnown(retval);
+						LibraryCall MoveArm(numplanner_i = numplanner_j, pos_i = pos_j, positionTarget_i = positionTarget, positionNow_i = positionNow, blocks_on_pos_i = blocks_on_pos_j, coordZ_i = coordZ_j, midZ_i = midZ_j, retval_o = retval);
+					}
+					CheckBarrier:
+					{
+						StartCondition Move.outcome == SUCCESS;
+						EndCondition isKnown(barrier);
+						barrier = checkBarrier();
+					}
+					
+					if barrier == true
+					{
+						retval_out = pos_j[i];
+					}endif
+					
+				}endif
+			}
+		}
+		
+		NotFound:
+		{
+			StartCondition FindBlock.outcome == SUCCESS;
+			if (!isKnown(retval_out))
+			{
+				retval_out = pos_j[1];
+			}endif
+		}
+	}// end Sequence
+	
+	
+}

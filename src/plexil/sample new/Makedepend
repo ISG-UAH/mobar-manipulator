@@ -1,0 +1,37 @@
+subscriber.o: subscriber.cc subscriber.hh
+sample_system.o: sample_system.cc subscriber.hh
+SampleAdapter.o: SampleAdapter.cc \
+ /home/goac/Escritorio/mobar-svn/mobar/bin/plexil-3/src/app-framework/AdapterFactory.hh \
+ /home/goac/Escritorio/mobar-svn/mobar/bin/plexil-3/src/utils/Id.hh \
+ /home/goac/Escritorio/mobar-svn/mobar/bin/plexil-3/src/plexil-config.h \
+ /home/goac/Escritorio/mobar-svn/mobar/bin/plexil-3/src/utils/Error.hh \
+ /home/goac/Escritorio/mobar-svn/mobar/bin/plexil-3/src/utils/IdTable.hh \
+ /home/goac/Escritorio/mobar-svn/mobar/bin/plexil-3/src/utils/generic_hash_map.hh \
+ /home/goac/Escritorio/mobar-svn/mobar/bin/plexil-3/src/utils/ThreadMutex.hh \
+ /home/goac/Escritorio/mobar-svn/mobar/bin/plexil-3/src/utils/LabelStr.hh \
+ /home/goac/Escritorio/mobar-svn/mobar/bin/plexil-3/src/utils/ConstantMacros.hh \
+ /home/goac/Escritorio/mobar-svn/mobar/bin/plexil-3/src/utils/KeySource.hh \
+ /home/goac/Escritorio/mobar-svn/mobar/bin/plexil-3/src/utils/TwoWayStore.hh \
+ /home/goac/Escritorio/mobar-svn/mobar/bin/plexil-3/src/utils/ItemStoreEntry.hh \
+ /home/goac/Escritorio/mobar-svn/mobar/bin/plexil-3/src/utils/TwoWayTable.hh \
+ /home/goac/Escritorio/mobar-svn/mobar/bin/plexil-3/src/utils/TwoWayTable_unordered_map.hh \
+ /home/goac/Escritorio/mobar-svn/mobar/bin/plexil-3/src/exec/CoreExpressions.hh \
+ /home/goac/Escritorio/mobar-svn/mobar/bin/plexil-3/src/exec/Calculable.hh \
+ /home/goac/Escritorio/mobar-svn/mobar/bin/plexil-3/src/exec/PlexilPlan.hh \
+ /home/goac/Escritorio/mobar-svn/mobar/bin/plexil-3/src/exec/ExecDefs.hh \
+ /home/goac/Escritorio/mobar-svn/mobar/bin/plexil-3/src/utils/generic_hash_map.hh \
+ /home/goac/Escritorio/mobar-svn/mobar/bin/plexil-3/src/utils/Value.hh \
+ /home/goac/Escritorio/mobar-svn/mobar/bin/plexil-3/src/exec/PlexilResource.hh \
+ /home/goac/Escritorio/mobar-svn/mobar/bin/plexil-3/src/exec/SubexpressionListener.hh \
+ /home/goac/Escritorio/mobar-svn/mobar/bin/plexil-3/src/exec/Expression.hh \
+ /home/goac/Escritorio/mobar-svn/mobar/bin/plexil-3/src/exec/Variable.hh \
+ /home/goac/Escritorio/mobar-svn/mobar/bin/plexil-3/src/app-framework/AdapterExecInterface.hh \
+ /home/goac/Escritorio/mobar-svn/mobar/bin/plexil-3/src/exec/ExecDefs.hh \
+ /home/goac/Escritorio/mobar-svn/mobar/bin/plexil-3/src/utils/ParserException.hh \
+ /home/goac/Escritorio/mobar-svn/mobar/bin/plexil-3/src/exec/Expression.hh \
+ /home/goac/Escritorio/mobar-svn/mobar/bin/plexil-3/src/utils/Debug.hh \
+ subscriber.hh sample_system.hh SampleAdapter.hh \
+ /home/goac/Escritorio/mobar-svn/mobar/bin/plexil-3/src/app-framework/InterfaceAdapter.hh \
+ /home/goac/Escritorio/mobar-svn/mobar/bin/plexil-3/src/third-party/pugixml/src/pugixml.hpp \
+ /home/goac/Escritorio/mobar-svn/mobar/bin/plexil-3/src/third-party/pugixml/src/pugiconfig.hpp \
+ /home/goac/Escritorio/mobar-svn/mobar/bin/plexil-3/src/exec/Command.hh

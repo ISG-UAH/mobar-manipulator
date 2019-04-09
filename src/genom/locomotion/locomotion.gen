@@ -1,0 +1,82 @@
+/* --------------------------| MODULE DECLARATION |-------------------------- */
+module locomotion {
+    number:	    2002;
+    internal_data:  LOCOMOTION_STR;
+    version:	    "1.1";
+    email:	    "juan.mora@edu.uah.es";
+    requires:	proximity, clamp;
+    lang:	    "c";
+};
+
+
+/* --------------------| DEFINITION OF INTERNAL DATABASE |------------------- */
+#include "locomotionStruct.h"
+
+typedef struct LOCOMOTION_STR
+{
+    POSITION	position;
+    SERVOS		servos;
+    double		velocity;
+    ANGLEROTATE	angle;
+    ANGLEROTATE	angleparams;
+    float 		movement[3];
+    MailBOX 	MBproximity;
+}LOCOMOTION_STR;
+
+
+/* ---------------------| SERVICES DEFINITION: REQUESTS |-------------------- */
+
+request MoveRef {
+    type:		exec;
+    input:		newmove::movement;
+    codel_main:		moveRefMain;
+    fail_reports:	TOO_FAR_AWAY;
+    interrupt_activity:	RotateRef, MoveTo, MoveRef;
+    exec_task:		LocomotionTask;
+};
+
+request MoveTo {
+    type:		exec;
+    input:		newmove::movement;
+    codel_main:		moveToMain;
+    fail_reports:	TOO_FAR_AWAY, LEFT_COLLISION, RIGHT_COLLISION, TOP_COLLISION, BACK_COLLISION; 
+    interrupt_activity:	RotateRef, MoveTo, MoveRef;
+    exec_task:		LocomotionTask;
+};
+
+request RotateRef {
+    type:		exec;
+    input:		newangle::angleparams;
+    codel_main:		rotateRefMain;
+    fail_reports:	TOO_FAR_AWAY;
+    interrupt_activity:	RotateRef, MoveTo, MoveRef;
+    exec_task:		LocomotionTask;
+};
+
+request SetSpeed {
+    type:		exec;
+    input:		speed::velocity;
+    codel_main:		SetSpeedMain;
+    fail_reports:	TOO_HIGH_SPEED, TOO_LOW_SPEED;
+    interrupt_activity:	RotateRef, MoveTo, MoveRef;
+    exec_task:		LocomotionTask;
+};
+
+
+/* --------------------------| POSTERS DECLARATION |------------------------- */
+
+poster Status {
+    update:	auto;
+    data:	position::position, velocity::velocity, servos::servos, angle::angle;
+    exec_task:	LocomotionTask;
+};
+
+
+/* ----------------------| EXECUTION TASKS DECLARATION |--------------------- */
+exec_task LocomotionTask {
+    period:		10;
+    priority:		200;
+    stack_size:		20000;
+    codel_task_start:	locomotionInit;
+    codel_task_end:	locomotionEnd;
+};

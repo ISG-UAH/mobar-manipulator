@@ -1,0 +1,14 @@
+prefix=/usr/local
+exec_prefix=${prefix}
+libdir=${exec_prefix}/lib
+includedir=${prefix}/include
+genomfile=proximity.gen
+genomflags=
+cppflags=
+
+Name: proximity
+Description: proximity Genom module
+Version: 1.0
+Requires: genom >= 2.12 
+Libs: -L${libdir} -lproximityClient
+Cflags: -I${includedir} -I${includedir}/proximity

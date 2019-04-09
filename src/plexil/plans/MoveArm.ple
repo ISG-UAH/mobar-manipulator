@@ -1,0 +1,143 @@
+// Commands for PDDL planner
+Integer Command create_planner(String configfile);
+Boolean Command get_plan(Integer numplanner, Boolean replan);
+String  Command next_action(Integer numplanner);
+Boolean	Command insert_predicate(Integer numplanner, String predicate, String objects, Boolean isgoal);
+Boolean Command modify_predicate(Integer numplanner, String predicate, String objectsold, String objectsnew);
+Boolean Command remove_predicate(Integer numplanner, String predicate, String objects);
+Boolean Command modify_function(Integer numplanner, String predicate, String objects, Real value);
+String 	Command predicate_object(Integer numplanner, String predicate, Integer numobject);
+String 	Command action_object(Integer numplanner, Integer numobject);
+Real	Command function_value(Integer numplanner, String predicate, String objects);
+Real	Command action_duration(Integer numplanner);
+
+// Commands for Locomotion
+Boolean	Command init_locomotion();
+Integer	Command moveRef(String, Real);
+Integer	Command moveTo(String, Real);
+Integer	Command rotateRef(Integer, Real);
+Boolean	Command setSpeed(Real);
+String	Command getNowposition();
+String 	Command getBackposition(String, Real);
+Real	Command getNowX();
+Real	Command getNowY();
+Real	Command getNowZ();
+
+
+MoveArm:
+{
+	In Integer numplanner_i;
+	InOut String pos_i[4];
+	In String positionTarget_i;
+	In String positionNow_i;
+	InOut Integer blocks_on_pos_i[4];
+	InOut Real coordZ_i;
+	In Real midZ_i;
+	InOut Integer retval_o;
+	
+	String positionNear;
+	Real radius = 5;
+	Real h_block = 2.8;	// Altura de un bloque
+	Real offset = 2;	// Altura offset de los bloques
+	Real topZ = 20;
+	Real ang = 1.2;
+	Real LowSpeed = 1;
+	Real HighSpeed = 3;
+	Integer num_blocks = 4;
+	
+	EndCondition isKnown(retval_o);
+	
+	SetLowSpeedUp: 
+	{
+		Boolean success;
+		EndCondition isKnown(success);
+		success = setSpeed(LowSpeed);
+	}
+	MoveToMid: 
+	{
+		Integer retval;
+		StartCondition SetLowSpeedUp.outcome == SUCCESS;
+		EndCondition isKnown(retval);
+		retval = moveTo(positionNow_i, midZ_i);
+	}
+	
+	MoveToBack:
+	{
+		StartCondition MoveToMid.outcome == SUCCESS;
+		Sequence
+		{
+			CalculateNearPos: positionNear = getBackposition(positionNow_i, radius);
+			MoveToNear:
+			{
+			Integer retval;
+			StartCondition CalculateNearPos.outcome == SUCCESS;
+			EndCondition isKnown(retval);
+			retval = moveTo(positionNear, midZ_i);
+			}
+		}
+	}
+
+	SetHighSpeedUp: 
+	{
+		Boolean success;
+		StartCondition MoveToBack.outcome == SUCCESS;
+		EndCondition isKnown(success);
+		success = setSpeed(HighSpeed);
+	}
+	
+	
+	MoveToTopNear1: 
+	{
+		Integer retval;
+		StartCondition SetHighSpeedUp.outcome == SUCCESS;
+		EndCondition isKnown(retval);
+		retval = moveTo(positionNear, topZ);
+	}
+	MoveToTopNear2: 
+	{
+		Integer retval;
+		StartCondition MoveToTopNear1.outcome == SUCCESS;
+		EndCondition isKnown(retval);
+		retval = moveTo(positionNear, topZ);
+	}
+	
+	MoveToTopNearTarget: 
+	{
+		StartCondition MoveToTopNear2.outcome == SUCCESS;
+		Sequence
+		{
+			CalculateNearPosTarget: positionNear = getBackposition(positionTarget_i, radius);
+			MoveToNearTarget:
+			{
+			Integer retval;
+			StartCondition CalculateNearPosTarget.outcome == SUCCESS;
+			EndCondition isKnown(retval);
+			retval = moveTo(positionNear, topZ);
+			}
+		}
+	}					
+
+	MoveToTopMidTarget: 
+	{
+		Integer retval;
+		StartCondition MoveToTopNearTarget.outcome == SUCCESS;
+		EndCondition isKnown(retval);
+		retval = moveTo(positionTarget_i, midZ_i);
+	}
+	
+	SetLowSpeedDown: 
+	{
+		Boolean success;
+		StartCondition MoveToTopMidTarget.outcome == SUCCESS;
+		EndCondition isKnown(success);
+		success = setSpeed(LowSpeed);
+	}
+	 
+	MoveTo: 
+	{
+		//Integer retval;
+		StartCondition SetLowSpeedDown.outcome == SUCCESS;
+		EndCondition isKnown(retval_o);
+		retval_o = moveTo(positionTarget_i, coordZ_i);
+	} 
+}

@@ -1,0 +1,57 @@
+<Interfaces>
+
+  <Adapter AdapterType="PDDLAdapter">
+ 		<DefaultAdapter/>
+		<CommandNames>
+		create_planner,
+		get_plan,
+		next_action,
+		insert_predicate,
+		modify_predicate,
+		remove_predicate,
+		predicate_object,
+		modify_function,
+		function_value,
+		action_object,
+		action_duration,
+		</CommandNames>
+		
+		<LookupNames>
+		duracion
+		</LookupNames>
+	</Adapter>
+	
+ <Adapter AdapterType="LocomotionAdapter">
+		<CommandNames>
+		init_locomotion,
+		end_locomotion,
+		moveRef,
+		moveTo,
+		rotateRef,
+		setSpeed,
+		getNowposition,
+		getBackposition,
+		getNowX,
+		getNowY,
+		getNowZ,
+		</CommandNames>
+ </Adapter>	
+
+ <Adapter AdapterType="ClampAdapter">
+		<CommandNames>
+		init_clamp,
+		end_clamp,
+		openClamp,
+		closeClamp,
+		checkBarrier,
+		getColor,
+		</CommandNames>
+ </Adapter>		
+
+ <Adapter AdapterType="OSNativeTime"/>
+ <Listener ListenerType="LuvListener"/>
+ <Listener ListenerType="PlanDebugListener"/>
+ 
+  <!-- Extraer un grafico de Gantt (raiz de plexil) -->
+  <Listener ListenerType="GanttListener" />
+</Interfaces>

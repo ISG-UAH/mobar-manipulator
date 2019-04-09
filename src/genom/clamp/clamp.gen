@@ -1,0 +1,65 @@
+/* --------------------------| MODULE DECLARATION |-------------------------- */
+module clamp {
+    number:	    2003;
+    internal_data:  CLAMP_STR;
+    version:	    "1.0";
+    email:	    "juan.mora@edu.uah.es";
+    lang:	    "c";
+};
+
+
+/* --------------------| DEFINITION OF INTERNAL DATABASE |------------------- */
+#include "clampStruct.h"
+
+typedef struct CLAMP_STR
+{
+    GRIP_STATE grip;
+    COLORRGB object;
+}CLAMP_STR;
+
+
+/* ---------------------| SERVICES DEFINITION: REQUESTS |-------------------- */
+
+request OpenGrip {
+    type:		exec;
+    codel_main:		openGripMain;
+    exec_task:		ClampTask;
+};
+
+request CloseGrip {
+    type:		exec;
+    codel_main:		closeGripMain;
+    exec_task:		ClampTask;
+};
+
+request CheckBarrier {
+    type:		exec;
+    codel_main:		checkBarrierMain;
+    exec_task:		ClampTask;
+};
+
+request GetObject {
+    type:		exec;
+    codel_main:		getObjectMain;
+    fail_reports:	COLOR_NOT_DETECTED;
+    exec_task:		ClampTask;
+};
+
+
+/* --------------------------| POSTERS DECLARATION |------------------------- */
+
+poster Status {
+    update:	auto;
+    data:	grip::grip, object::object;
+    exec_task:	ClampTask;
+};
+
+
+/* ----------------------| EXECUTION TASKS DECLARATION |--------------------- */
+exec_task ClampTask {
+    period:		20;
+    priority:		200;
+    stack_size:		20000;
+    codel_task_start:	clampInit;
+    codel_task_end:	clampEnd;
+};

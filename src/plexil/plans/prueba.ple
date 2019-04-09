@@ -1,0 +1,404 @@
+// Commands for PDDL planner
+Integer Command create_planner(String configfile);
+Boolean Command get_plan(Integer numplanner, Boolean replan);
+String  Command next_action(Integer numplanner);
+Boolean	Command insert_predicate(Integer numplanner, String predicate, String objects, Boolean isgoal);
+Boolean Command modify_predicate(Integer numplanner, String predicate, String objectsold, String objectsnew);
+Boolean Command remove_predicate(Integer numplanner, String predicate, String objects);
+Boolean Command modify_function(Integer numplanner, String predicate, String objects, Real value);
+String 	Command predicate_object(Integer numplanner, String predicate, Integer numobject);
+String 	Command action_object(Integer numplanner, Integer numobject);
+Real	Command function_value(Integer numplanner, String predicate, String objects);
+Real	Command action_duration(Integer numplanner);
+
+// Commands for Locomotion
+Boolean	Command init_locomotion();
+Integer	Command moveRef(String, Real);
+Integer	Command moveTo(String, Real);
+Integer	Command rotateRef(Integer, Real);
+Boolean	Command setSpeed(Real);
+String	Command getNowposition();
+String 	Command getBackposition(String, Real);
+Real	Command getNowX();
+Real	Command getNowY();
+Real	Command getNowZ();
+
+// Commands for Clamp
+Boolean	Command init_clamp();
+Boolean	Command openClamp();
+Boolean	Command closeClamp();
+Boolean	Command checkBarrier();
+String	Command getColor();
+
+// Library Calls
+LibraryAction MoveArm(In Integer numplanner_i, InOut String pos_i[4], In String positionTarget_i, In String positionNow_i, InOut Integer blocks_on_pos_i[4], InOut Real coordZ_i, In Real midZ_i, InOut Integer retval_o);
+LibraryAction SearchBlock(In Integer numplanner_j, In String NameBlocks_j[4], In String colorTarget_j, InOut String pos_j[4], In String positionTarget_j, In String positionNow_j, InOut Real coordZ_j,  InOut Integer blocks_on_pos_j[4], In Real midZ_j, InOut String retval_out);
+
+Planner:
+{
+// Planner variables
+String rutaplanner = "/home/goac/Escritorio/mobar-svn/mobar/bin/PDDL/configBrazo";
+Integer numplanner;
+
+// Actions variables
+String nameaction = "Init";
+String finished = "FINAL_PLAN";
+String move = "move";
+String opengrip = "opengrip";
+String closegrip = "closegrip";
+String positionTarget;
+String positionNow;
+String positionNear;
+Real radius = 5;
+Real coordZ;
+Real h_block = 2.8;	// Altura de un bloque
+Real offset = 2;	// Altura offset de los bloques
+Real topZ = 20;
+Real midZ;
+Real ang = 1.2;
+Real LowSpeed = 1;
+Real HighSpeed = 3;
+
+// State variables
+Integer num_blocks = 4;
+Integer num_pos = 0;
+String pos[4] = #("P10_15" "P0_18" "P-10_15" "P10_10");		// Posiciones posibles de los bloques
+Integer blocks_on_pos[4] = #(0 0 0 0);		// Numero de bloques en cada posicion
+
+String posBlocks[4] = #("position red" "position white" "position green" "position blue");	// Predicados del problema
+String NameBlocks[4] = #("RED" "WHITE" "GREEN" "BLUE");		// Nombre de los bloques
+
+String posBlocksInit[4];	
+String posBlocksStatus[4];	// Posiciones actuales de cada bloque
+String blockNow;		// Bloque en manipulacion
+Integer blockColorIndex = 0;	// Indice a NameBlocks del bloque en manipulacion
+
+
+Integer j = 0;
+String BlockOn = "GRIP-BLOCK-ON-BLOCK";
+	
+GetInitialState:
+{
+	Sequence
+	{
+	CreatePlanner:
+	{
+		numplanner = create_planner(rutaplanner);
+	}
+	GetPlan:
+	{
+		Boolean success;
+		Boolean replan = false;
+		StartCondition isKnown(numplanner);
+		EndCondition isKnown(success);
+		success = get_plan(numplanner, replan);
+	}
+	OpenGripInit:
+	{
+		Boolean success;
+		StartCondition GetPlan.outcome == SUCCESS;
+		EndCondition isKnown(success);
+		success = openClamp();
+	}
+	setMidZ: midZ = topZ*3/4;
+	
+	
+	while j < num_blocks
+	{
+		WhereIsEachBlock:
+		{
+			StartCondition OpenGripInit.outcome == SUCCESS;
+			EndCondition posBlocksStatus[j] != "NULL";
+			posBlocksStatus[j] = predicate_object(numplanner, posBlocks[j], 2);
+		}
+		PosInit:
+		{
+			StartCondition WhereIsEachBlock.outcome == SUCCESS;
+			posBlocksInit[j] = posBlocksStatus[j];
+		}
+		GetBlocksOnPos:
+		{
+			Boolean ret = false;
+			Integer i = 0;
+			StartCondition isKnown(posBlocksStatus[j]);
+			EndCondition ret == true;
+			while ret == false && i < num_blocks
+			{
+			if (!isKnown(pos[i]) || posBlocksStatus[j] == pos[i])
+			{
+				pos[i] = posBlocksStatus[j];
+				blocks_on_pos[i] = blocks_on_pos[i] + 1; 
+				ret = true;
+			}else
+			{
+				i = i + 1;
+			}endif
+			}
+		}
+		j = j + 1;
+	}
+	}
+}
+Activity:
+{
+    Boolean next = true;
+	while nameaction != finished
+	{
+	Sequence
+	{
+	GetNewAction:
+	{
+		StartCondition next;
+		nameaction = next_action(numplanner);
+	}
+	WaitNext:
+		next = false;
+
+	MoveAction:
+	{
+		if nameaction == move
+		{
+		GetPosTarget: positionTarget = action_object(numplanner, 2);
+		GetPosNow: positionNow = getNowposition();
+		
+		GetZTarget:
+		{
+			Boolean success;
+			StartCondition GetPosNow.outcome == SUCCESS;
+			EndCondition isKnown(success);
+			GetZTarget1:
+			{
+				Boolean ret = false;
+				Integer i = 0;
+				coordZ = 0;
+				while ret == false && i < num_blocks
+				{
+					if (!isKnown(pos[i]) || positionTarget == pos[i])
+					{
+						coordZ = h_block * (blocks_on_pos[i]-0.5) + offset;
+						success = true; 
+						ret = true;
+					}else
+					{
+						i = i + 1;
+					}endif
+				}
+			}
+		}
+		Move:
+			{
+				Integer retval;
+				StartCondition GetZTarget.outcome == SUCCESS;
+				EndCondition isKnown(retval);
+				LibraryCall MoveArm(numplanner_i = numplanner, pos_i = pos, positionTarget_i = positionTarget, positionNow_i = positionNow, blocks_on_pos_i = blocks_on_pos, coordZ_i = coordZ, midZ_i = midZ, retval_o = retval);
+			}
+		}endif // end if
+	}
+		
+	OpenAction:
+	{
+		if nameaction == opengrip
+		{
+		Sequence
+		{
+			String positionTargetLocal;
+			OpenGrip:
+			{
+				Boolean success;
+				EndCondition isKnown(success);
+				success = openClamp();
+			}
+			GetPosTarget2:
+			{
+				EndCondition isKnown(positionTargetLocal);
+				positionTargetLocal = action_object(numplanner, 2);
+			}
+			
+			IncreaseBlockOnPosition:
+			{
+				
+				Boolean ret = false;
+				Integer i = 0;(:goal
+    (and
+        (position green P10_15)
+        (on green red)
+        (on red white)
+        (arm-position P0_18)
+	(< (distance) 150)
+    )
+ )
+ 
+				StartCondition GetPosTarget2.outcome == SUCCESS;
+				while ret == false && i < num_blocks
+				{
+				if !isKnown(pos[i])
+				{
+					pos[i] = positionTargetLocal;
+					blocks_on_pos[i] = blocks_on_pos[i] + 1;
+					ret = true;
+				} elseif positionTargetLocal == pos[i]
+				{
+					blocks_on_pos[i] = blocks_on_pos[i] + 1; 
+					ret = true;
+				}else
+				{
+					i = i + 1;
+				}endif
+				}
+			}
+			
+			UpdateColorBlock:
+			{
+				StartCondition IncreaseBlockOnPosition.outcome == SUCCESS;
+
+				posBlocksStatus[blockColorIndex] = positionTargetLocal;
+			}
+		} // end sequence
+	}endif
+	} // end OpenAction
+	
+	CloseAction:
+	{
+		
+		Boolean barrier;
+		if nameaction == closegrip
+		{
+			String positionTargetLocal;
+			String colorTarget;
+			String StringColor;
+			Integer StringPos;
+			
+			CloseGrip:
+			{
+				Boolean success;
+				EndCondition isKnown(success);
+				success = closeClamp();
+			}
+			
+			CheckObject:
+			{
+				StartCondition CloseGrip.outcome == SUCCESS;
+				EndCondition isKnown(StringColor);
+				StringColor = action_object(numplanner, 0);
+			}
+			
+			if StringColor == BlockOn
+			{
+				StringPos = 1;
+			}else
+			{
+				StringPos = 3;
+			}endif
+			
+			GetColorTarget:
+			{
+				StartCondition isKnown(StringPos);
+				EndCondition isKnown(colorTarget);
+				colorTarget = action_object(numplanner, StringPos);
+			}
+			
+			for (Integer i = 0; i < 4; i +1)
+			{
+				if colorTarget == NameBlocks[i]
+				{
+					blockColorIndex = i;
+				}endif
+			}
+			
+			GetPosTarget3:
+			{
+				StartCondition GetColorTarget.outcome == SUCCESS;
+				EndCondition isKnown(positionTargetLocal);
+				positionTargetLocal = action_object(numplanner, 2);
+			}
+			
+			DecreaseBlockOnPosition:
+			{
+				
+				Boolean ret = false;
+				Integer i = 0;
+				StartCondition GetPosTarget3.outcome == SUCCESS;
+				while ret == false && i < num_blocks
+				{
+				if positionTargetLocal == pos[i]
+				{
+					blocks_on_pos[i] = blocks_on_pos[i] - 1;
+					ret = true;
+				}else
+				{
+					i = i + 1;
+				}endif
+				}
+			}
+			CheckBarrier:
+			{
+				StartCondition DecreaseBlockOnPosition.outcome == SUCCESS;
+				//PostCondition barrier;
+				EndCondition isKnown(barrier);
+				barrier = checkBarrier();
+			}
+			
+			GetColor:
+			{
+				String colorDetected;
+				SkipCondition barrier == false;
+				StartCondition CheckBarrier.outcome == SUCCESS;
+				EndCondition isKnown(colorDetected);
+				//PostCondition colorDetected == colorTarget;
+				
+				colorDetected = getColor();
+			}
+			
+			Block_drop:
+			{
+				String retval;
+				Boolean success;
+				SkipCondition barrier == true;
+				StartCondition CheckBarrier.outcome == SUCCESS;
+				EndCondition isKnown(success); 
+				Search:
+				{
+					EndCondition isKnown(retval);
+					LibraryCall SearchBlock(numplanner_j = numplanner, NameBlocks_j = NameBlocks, colorTarget_j = colorTarget, pos_j = pos, positionTarget_j = positionTargetLocal, positionNow_j = positionNow, coordZ_j = coordZ, blocks_on_pos_j= blocks_on_pos, midZ_j = midZ, retval_out = retval);
+				}
+				
+				UpdatePosBlocks:
+				{
+					StartCondition Search.outcome == SUCCESS;
+					posBlocksStatus[blockColorIndex] = retval;
+				}
+				
+				UpdatePredicates:
+				{
+					for (Integer i = 0; i < num_blocks; i + 1)
+					{
+						Boolean retval; 
+						retval = modify_predicate(numplanner, posBlocks[i], posBlocksInit[i], posBlocksStatus[i]);
+						UpdatePred: posBlocksInit[i] = posBlocksStatus[i];
+					}
+				}
+				
+				Replan:
+				{
+					Boolean replan = true;
+					StartCondition UpdatePredicates.outcome == SUCCESS;
+					success = get_plan(numplanner, replan);
+				}
+				
+			}
+			
+		}endif
+	} // end CloseAction
+
+	SetNext:
+	{
+		StartCondition MoveAction.state == FINISHED && OpenAction.state == FINISHED && CloseAction.state == FINISHED;
+		//StartCondition MoveAction.outcome == SUCCESS && OpenAction.outcome == SUCCESS && CloseAction.outcome == SUCCESS;
+		PostCondition MoveAction.outcome == FAILURE && OpenAction.outcome == FAILURE && CloseAction.outcome == FAILURE; 
+		next = true;  
+	}
+	}
+	}
+}
+
+}

@@ -1,0 +1,27 @@
+proximityCntrlTaskCodels.o: ../../codels/proximityCntrlTaskCodels.c \
+ /opt/openrobots/include/portLib.h /opt/openrobots/include/sysLib.h \
+ /opt/openrobots/include/logLib.h /opt/openrobots/include/h2errorLib.h \
+ /opt/openrobots/include/errnoLib.h ../../server/proximityHeader.h \
+ /usr/include/stdio.h /usr/include/features.h /usr/include/stdc-predef.h \
+ /usr/include/x86_64-linux-gnu/sys/cdefs.h \
+ /usr/include/x86_64-linux-gnu/bits/wordsize.h \
+ /usr/include/x86_64-linux-gnu/gnu/stubs.h \
+ /usr/include/x86_64-linux-gnu/gnu/stubs-64.h \
+ /usr/lib/gcc/x86_64-linux-gnu/4.4.7/include/stddef.h \
+ /usr/include/x86_64-linux-gnu/bits/types.h \
+ /usr/include/x86_64-linux-gnu/bits/typesizes.h /usr/include/libio.h \
+ /usr/include/_G_config.h /usr/include/wchar.h \
+ /usr/lib/gcc/x86_64-linux-gnu/4.4.7/include/stdarg.h \
+ /usr/include/x86_64-linux-gnu/bits/stdio_lim.h \
+ /usr/include/x86_64-linux-gnu/bits/sys_errlist.h /usr/include/string.h \
+ /usr/include/xlocale.h ../../server/proximityPosterLib.h \
+ /opt/openrobots/include/posterLib.h \
+ /opt/openrobots/include/h2endianness.h \
+ /opt/openrobots/include/genom/genom.h ../../server/proximityType.h \
+ /opt/openrobots/include/genom/modules.h /opt/openrobots/include/csLib.h \
+ /opt/openrobots/include/gcomLib.h /opt/openrobots/include/mboxLib.h \
+ ../../server/proximityError.h /opt/openrobots/include/h2errorLib.h \
+ /opt/openrobots/include/genom/genomError.h ../../proximityStruct.h \
+ ../../server/proximityPosterLibStruct.h \
+ ../../server/proximityPosterWriteLibProto.h \
+ ../../server/proximityPosterReadLibProto.h

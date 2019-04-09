@@ -1,0 +1,4 @@
+SubDir TREX extra pddl ;
+
+ModulePlugin pddl : transaction ;
+ModuleFiles pddl : CDominio.cpp CProblema.cpp CPlan.cpp Planner.cpp pddl.cc ;

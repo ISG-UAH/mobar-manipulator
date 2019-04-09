@@ -1,0 +1,134 @@
+/**
+* Planner.ple
+* Pablo Munoz, 30 Mayo de 2011
+*/
+// Commands for PDDL planner
+Integer Command create_planner(String configfile);
+Boolean Command get_plan(Integer numplanner, Boolean replan);
+String  Command next_action(Integer numplanner);
+Boolean	Command insert_predicate(Integer numplanner, String predicate, String objects, Boolean isgoal);
+Boolean Command modify_predicate(Integer numplanner, String predicate, String objectsold, String objectsnew);
+Boolean Command remove_predicate(Integer numplanner, String predicate, String objects);
+Boolean Command modify_function(Integer numplanner, String predicate, String objects, Real value);
+String 	Command predicate_object(Integer numplanner, String predicate, Integer numobject);
+String 	Command action_object(Integer numplanner, Integer numobject);
+Real	Command function_value(Integer numplanner, String predicate, String objects);
+Real	Command action_duration(Integer numplanner);
+
+
+Planner:
+{
+	// Planner variables
+	String rutaplanner = "bin/planner/configSGP";
+	Integer numplanner;
+	Boolean replanificar = false;
+	// Init states and rover model
+	Real   initenergy;
+	String finished = "FINAL_PLAN";
+	// Predicates and functions names (from PDDL model)
+	String rovername   = "exomars";
+	String position    = "position";
+	String initpos     = "C0_0";
+	String energyfun   = "energy";
+	String drillgoal   = "drilled";
+	String imagegoal   = "transmited";
+	Boolean res;
+	String aux1;
+	String aux2;
+
+	GetInitialState:
+	{
+		Sequence
+		{
+		CreatePlanner:
+		{
+			EndCondition isKnown(numplanner);
+			PostCondition numplanner >= 0;
+			numplanner = create_planner(rutaplanner);
+
+			/*PostCondition: numplanner >= 0;
+			while ! isKnown(numplanner)
+				Plan: { numplanner = create_planner(rutaplanner); }*/
+		}
+		ValuePosInit: { aux1 = rovername + " " + initpos;}
+		ValueNewPos: { aux2 = rovername + " C0_0";}
+		SetPosition:
+		{
+			Boolean resultado;			
+			EndCondition isKnown(res);
+			resultado = modify_predicate(numplanner, position, aux1, aux2);
+		}
+		SetEnergy:
+		{
+			Boolean resultado;			
+			EndCondition isKnown(res);
+			resultado = modify_function(numplanner, energyfun, rovername, 2.4);
+		}
+		}
+	}
+
+	MainPlannerExecution:
+	{
+		StartCondition GetInitialState.state == FINISHED;
+		Sequence
+		{
+		Planning:
+		{
+			Boolean planok;
+			EndCondition isKnown(planok);
+			PostCondition planok;
+			planok = get_plan(numplanner, replanificar);
+			
+			/*while (! isKnown(planok) && planok != true)
+				planok = get_plan(numplanner, replanificar);*/
+		}
+		VarNoReplanificar: { replanificar = false; }
+		// Main execution flow
+		ExecutePlan:
+		{
+			String nomaccion;
+
+			//RepeatCondition CheckActionResult.outcome == SUCCESS && nomaccion != finished;
+			PostCondition nomaccion == finished;
+
+			while(nomaccion != finished)
+			{
+				Main:
+				Sequence
+				{
+				ReadNextAction: {
+					EndCondition isKnown(nomaccion);
+					nomaccion = next_action(numplanner);
+				}
+				GetDurExAct:
+					Concurrence
+					{
+						GetDuration:
+						{
+							Real duration;
+							EndCondition isKnown(duration);
+							duration = action_duration(numplanner);
+						}
+						ExecuteAction:
+						{
+							String auxact;
+							StartCondition ReadNextAction.state == FINISHED;
+							EndCondition isKnown(auxact);
+							GetObject: { auxact = action_object(numplanner,2); }
+						}
+
+			 	 CheckActionResult:
+			 	 {
+					PostCondition !replanificar;
+					replanificar = ExecuteAction.outcome == FAILURE;
+				 }
+				}
+				}
+			}
+					
+		} // Plan execution
+		}
+
+	} // Main planner execution
+
+} // root

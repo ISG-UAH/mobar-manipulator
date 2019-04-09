@@ -1,0 +1,23 @@
+%CONFIGURACION PLANIFICADOR PDDL
+%PLANIFICADOR
+/home/goac/Escritorio/mobar-svn/mobar/bin/PDDL/sgplan
+%PARAMETRO DOMINIO Y RUTA DOMINIO PDDL
+-o
+/home/goac/Escritorio/mobar-svn/mobar/bin/PDDL/domBrazo.pddl
+%PARAMETRO PROBLEMA Y RUTA PROBLEMA PDDL
+-f
+/home/goac/Escritorio/mobar-svn/mobar/bin/PDDL/probBrazo.pddl
+%PARAMETRO SALIDA Y RUTA FICHERO
+-out
+/home/goac/Escritorio/mobar-svn/mobar/bin/PDDL/plan
+%INICIO DE LAS ACCIONES FICHERO SALIDA
+; PlanningTechnique Modified-FF
+%
+%INFORMACION DE LAS ACCIONES Y
+%CONFIUGURACION ENLACE PDDL ACTION --> PLEXIL PLAN
+ACTIONS# 5
+MOVE-ARM 2 2 5 move
+GRIP-BLOCK-ON-BLOCK 2 3 6 closegrip
+PUT-ON-BLOCK 2 3 6 opengrip
+GRIP-BLOCK-ON-TABLE 2 3 6 closegrip
+PUT-ON-TABLE 2 2 5 opengrip

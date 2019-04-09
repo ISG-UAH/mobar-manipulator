@@ -1,0 +1,35 @@
+// A Plexil plan testing locomotion module.
+
+Boolean	Command init_locomotion();
+		Command moveRef(Real, Real, Real);
+		Command moveTo(Real, Real, Real);
+		Command rotateRef(Integer, Real);
+Boolean	Command setSpeed(Real);
+
+Boolean	Command init_clamp();
+Boolean	Command openClamp();
+Boolean	Command closeClamp();
+Boolean	Command checkBarrier();
+String	Command getColor();
+
+TestLocomotion:
+Sequence{
+  Real x, y, z;
+  String color;
+  String rosa = "PINK";
+  Init: init_locomotion();
+  InitClamp: init_clamp();
+//  x = 10;
+//  y = 10;
+//  z = 15;
+//  Move: moveTo(x, y, z);
+  Open1: openClamp();
+  Close: closeClamp();
+  Check: checkBarrier();
+  Color: color = getColor();
+  Compare:
+  {
+  	  StartCondition Color.outcome == SUCCESS;
+	  Open: openClamp();
+  }
+}
